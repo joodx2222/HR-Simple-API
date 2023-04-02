@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Exports\EmployeesExport;
 use App\Jobs\ImportEmployees;
+use App\Mail\SalaryUpdated;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeesController extends Controller
@@ -38,6 +40,16 @@ class EmployeesController extends Controller
         return response()->json($this->getEmployeeManagersNames($dbEmployee));
     }
 
+    public function updateEmployeeSalary($id, Request $request){
+        $dbEmployee = Employee::find($id);
+        $dbEmployee->salary = $request->salary;
+        $dbEmployee->save();
+
+        Mail::to('joodjindyacc@gmail.com')->send(new SalaryUpdated($dbEmployee->name, $request->salary));
+        return 200;
+
+    }
+
     public function employeeManagersWithSalaries($id, Request $request)
     {
         $dbEmployee = Employee::find($id);
@@ -58,7 +70,7 @@ class EmployeesController extends Controller
         $CSVFile = $request->file('CSVFile');
         if ($CSVFile) {
             $CSVFileFullPath = $CSVFile->store('export');
-            ImportEmployees::dispatch(storage_path('app/'.$CSVFileFullPath));
+            ImportEmployees::dispatch(storage_path('app/' . $CSVFileFullPath));
             $dbUser = $request->dbUser;
             $this->createUserLog($dbUser->id, "User $dbUser->name that has Id $dbUser->id imported employees from CSV file");
             return $CSVFileFullPath;
