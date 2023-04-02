@@ -31,6 +31,7 @@ Route::middleware('verifyToken')->group(function(){
             Route::get('/', [EmployeesController::class, 'single']);
             Route::get('/managers', [EmployeesController::class, 'employeeManagers']);
             Route::get('/managers-salary', [EmployeesController::class, 'employeeManagersWithSalaries']);
+            Route::put('/updateSalary', [EmployeesController::class, 'updateEmployeeSalary']);
         });
     });
 });
